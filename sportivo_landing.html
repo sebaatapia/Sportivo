@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sportivo — Gestión de centros deportivos</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #3B82F6;
+    --blue-dark: #1D4ED8;
+    --blue-deeper: #0A1628;
+    --blue-mid: #0D1B2E;
+    --cyan: #38BDF8;
+    --cyan-soft: rgba(56,189,248,0.12);
+    --text: #E2E8F0;
+    --muted: #64748B;
+    --muted-light: #94A3B8;
+    --border: #1E293B;
+    --surface: #0F1E32;
+    --white: #fff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--blue-deeper);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── UTILITIES ─── */
+  .display { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25);
+    color: var(--cyan); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 999px;
+  }
+  .tag .dot { width: 5px; height: 5px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 0;
+    background: rgba(10,22,40,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.3s;
+  }
+
+  nav .inner {
+    max-width: 1100px; margin: 0 auto; padding: 0 32px;
+    display: flex; align-items: center; gap: 32px;
+  }
+
+  .nav-logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px; font-weight: 800;
+    color: var(--white); letter-spacing: -0.01em;
+  }
+
+  .nav-logo span { color: var(--blue); }
+
+  .nav-links {
+    display: flex; gap: 28px; margin-left: auto;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 13px; font-weight: 500; color: var(--muted-light);
+    text-decoration: none; transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--white); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 10px 22px; border-radius: 8px;
+    text-decoration: none; cursor: pointer;
+    border: none; transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+  }
+
+  .btn-primary:hover {
+    background: var(--blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px rgba(59,130,246,0.45);
+  }
+
+  .btn-ghost {
+    background: transparent; color: var(--muted-light);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+
+  .btn-large {
+    font-size: 15px; padding: 14px 32px; border-radius: 10px;
+  }
+
+  /* ─── HERO ─── */
+  #hero {
+    padding: 160px 0 120px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 0%, transparent 70%);
+  }
+
+  #hero .container { position: relative; z-index: 1; text-align: center; }
+
+  .hero-tag { margin-bottom: 28px; }
+
+  .hero-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+
+  .hero-title .highlight {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 19px);
+    color: var(--muted-light);
+    max-width: 560px;
+    margin: 0 auto 40px;
+    line-height: 1.65;
+  }
+
+  .hero-ctas {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 64px;
+  }
+
+  .hero-stats {
+    display: inline-flex; gap: 40px;
+    padding: 20px 36px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+  }
+
+  .stat-item { text-align: center; }
+
+  .stat-value {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 24px; font-weight: 800;
+    color: var(--white);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .stat-sep { width: 1px; background: var(--border); }
+
+  /* HERO MOCKUP */
+  .hero-mockup {
+    margin-top: 64px;
+    position: relative;
+    max-width: 880px;
+    margin-inline: auto;
+  }
+
+  .hero-mockup::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.5), rgba(56,189,248,0.2), transparent 60%);
+    z-index: 0;
+  }
+
+  .mockup-window {
+    position: relative; z-index: 1;
+    background: #060E1A;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(59,130,246,0.2);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.1);
+  }
+
+  .mockup-topbar {
+    background: #070F1C;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .circle { width: 10px; height: 10px; border-radius: 50%; }
+
+  .mockup-sidebar {
+    display: flex;
+    height: 340px;
+  }
+
+  .sidebar {
+    width: 180px;
+    background: #07111F;
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; font-weight: 800;
+    color: var(--blue);
+    letter-spacing: 0.05em;
+    padding: 0 8px;
+    margin-bottom: 24px;
+  }
+
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 7px;
+    font-size: 12px; font-weight: 500;
+    color: var(--muted); margin-bottom: 2px;
+    cursor: pointer; transition: all 0.15s;
+  }
+
+  .sidebar-item.active {
+    background: rgba(59,130,246,0.12);
+    color: var(--blue);
+  }
+
+  .sidebar-icon { font-size: 14px; }
+
+  .mockup-main {
+    flex: 1;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  .mockup-main-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--white);
+    margin-bottom: 18px;
+  }
+
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 16px;
+  }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .kpi-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--white); }
+  .kpi-sub { font-size: 10px; color: var(--cyan); margin-top: 2px; }
+  .kpi-sub.warn { color: #F59E0B; }
+
+  .table-mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .table-row {
+    display: flex; align-items: center;
+    padding: 9px 14px; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+
+  .table-row:last-child { border-bottom: none; }
+  .table-row.header { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.02); }
+
+  .tr-name { flex: 1; color: var(--text); font-weight: 500; }
+  .tr-curso { width: 110px; color: var(--muted-light); }
+  .tr-pago { width: 70px; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+  }
+
+  .badge-ok { background: rgba(16,185,90,0.15); color: #10B95A; }
+  .badge-warn { background: rgba(245,158,11,0.15); color: #F59E0B; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #EF4444; }
+
+  /* ─── HOW IT WORKS ─── */
+  #como-funciona {
+    padding: 120px 0;
+    position: relative;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .section-header .tag { margin-bottom: 20px; }
+
+  .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(30px, 4vw, 46px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 16px; color: var(--muted-light);
+    max-width: 480px; margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    position: relative;
+  }
+
+  .step-connector {
+    position: absolute;
+    top: 52px; left: calc(16.6% + 40px); right: calc(16.6% + 40px);
+    height: 1px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan), var(--blue));
+    opacity: 0.3;
+  }
+
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .step:hover {
+    border-color: rgba(59,130,246,0.4);
+    transform: translateY(-4px);
+  }
+
+  .step-number {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .step-num-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: var(--blue);
+  }
+
+  .step-icon {
+    font-size: 32px; margin-bottom: 20px; display: block;
+  }
+
+  .step-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--white); margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 14px; color: var(--muted-light);
+    line-height: 1.65;
+  }
+
+  /* ─── FEATURES ─── */
+  #funcionalidades {
+    padding: 120px 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(59,130,246,0.04) 50%, transparent 100%);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-top: 0;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-3px); }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-card.featured {
+    grid-column: span 2;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 32px; align-items: center;
+    background: linear-gradient(135deg, #0D1B2E 0%, #0A1628 100%);
+    border-color: rgba(59,130,246,0.25);
+  }
+
+  .feature-card.featured::before { opacity: 1; }
+
+  .feature-icon {
+    font-size: 28px; margin-bottom: 16px; display: block;
+  }
+
+  .feature-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.25);
+    color: var(--cyan);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 4px;
+    margin-bottom: 14px;
+  }
+
+  .feature-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--white); margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-desc {
+    font-size: 14px; color: var(--muted-light); line-height: 1.65;
+  }
+
+  .feature-list {
+    list-style: none; margin-top: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: var(--muted-light);
+  }
+
+  .feature-list li::before {
+    content: '→'; color: var(--blue); font-size: 12px; margin-top: 2px; flex-shrink: 0;
+  }
+
+  .feature-visual {
+    background: #060E1A;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .payment-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .payment-item:last-child { border-bottom: none; }
+
+  .payment-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+
+  .payment-info { flex: 1; }
+  .payment-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .payment-course { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .payment-amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700; color: var(--white); }
+
+  /* ─── CTA / LEAD FORM ─── */
+  #contacto {
+    padding: 120px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(59,130,246,0.1) 0%, transparent 70%);
+  }
+
+  .cta-box {
+    position: relative; z-index: 1;
+    background: var(--surface);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 24px;
+    padding: 64px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.08), 0 40px 80px rgba(0,0,0,0.4);
+  }
+
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.6), rgba(56,189,248,0.4), transparent);
+    border-radius: 24px 24px 0 0;
+  }
+
+  .cta-left .tag { margin-bottom: 20px; }
+
+  .cta-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .cta-title span { color: var(--blue); }
+
+  .cta-sub {
+    font-size: 15px; color: var(--muted-light); line-height: 1.65;
+    margin-bottom: 28px;
+  }
+
+  .cta-perks {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .perk {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--muted-light);
+  }
+
+  .perk-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--blue); flex-shrink: 0;
+  }
+
+  /* FORM */
+  .lead-form {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-group label {
+    font-size: 11px; font-weight: 600; color: var(--muted-light);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  .form-group input,
+  .form-group select {
+    background: #07111F;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    width: 100%;
+  }
+
+  .form-group input::placeholder { color: #2D3F56; }
+  .form-group input:focus,
+  .form-group select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+  .form-group select option { background: #0D1B2E; }
+
+  .form-submit {
+    width: 100%;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .form-submit:hover {
+    background: var(--blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px rgba(59,130,246,0.45);
+  }
+
+  .form-disclaimer {
+    font-size: 11px; color: var(--muted); text-align: center; line-height: 1.5;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+  }
+
+  footer .inner {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1100px; margin: 0 auto; padding: 0 32px;
+  }
+
+  .footer-logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px; font-weight: 800; color: var(--white);
+  }
+
+  .footer-logo span { color: var(--blue); }
+  .footer-copy { font-size: 12px; color: var(--muted); }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .fade-up.delay-1 { transition-delay: 0.1s; }
+  .fade-up.delay-2 { transition-delay: 0.2s; }
+  .fade-up.delay-3 { transition-delay: 0.3s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .steps { grid-template-columns: 1fr; }
+    .step-connector { display: none; }
+    .features-grid { grid-template-columns: 1fr; }
+    .feature-card.featured { grid-column: span 1; grid-template-columns: 1fr; }
+    .cta-box { grid-template-columns: 1fr; padding: 36px 24px; gap: 36px; }
+    .form-row { grid-template-columns: 1fr; }
+    .hero-stats { gap: 20px; padding: 16px 20px; flex-wrap: wrap; justify-content: center; }
+    .nav-links { display: none; }
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .mockup-sidebar { height: 280px; }
+    .sidebar { width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="nav-logo display">SPORT<span>I</span>VO</div>
+    <ul class="nav-links">
+      <li><a href="#como-funciona">Cómo funciona</a></li>
+      <li><a href="#funcionalidades">Funcionalidades</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <a href="#contacto" class="btn btn-primary" style="margin-left: auto;">Quiero una demo →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="container">
+    <div class="hero-tag fade-up">
+      <span class="tag"><span class="dot"></span>Ahora disponible en Chile</span>
+    </div>
+    <h1 class="hero-title fade-up delay-1">
+      Gestiona tu centro<br>deportivo <span class="highlight">sin el caos</span>
+    </h1>
+    <p class="hero-sub fade-up delay-2">
+      Sportivo centraliza cursos, alumnos, comunicaciones y cobros online en una sola plataforma. Sin Excel, sin WhatsApp y sin perseguir pagos.
+    </p>
+    <div class="hero-ctas fade-up delay-3">
+      <a href="#contacto" class="btn btn-primary btn-large">Quiero una demo gratuita →</a>
+      <a href="#como-funciona" class="btn btn-ghost btn-large">Ver cómo funciona</a>
+    </div>
+    <div class="hero-stats fade-up delay-3">
+      <div class="stat-item">
+        <span class="stat-value display">100%</span>
+        <span class="stat-label">Online</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-value display">0</span>
+        <span class="stat-label">Planillas de Excel</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-value display">1</span>
+        <span class="stat-label">Plataforma. Todo.</span>
+      </div>
+    </div>
+
+    <!-- MOCKUP -->
+    <div class="hero-mockup fade-up" style="margin-top: 64px;">
+      <div class="mockup-window">
+        <div class="mockup-topbar">
+          <div class="circle" style="background:#EF4444"></div>
+          <div class="circle" style="background:#F59E0B"></div>
+          <div class="circle" style="background:#10B981"></div>
+          <span style="font-size:11px; color:#2D3F56; margin-left:12px; font-family:'Inter',sans-serif;">app.sportivo.cl — Dashboard</span>
+        </div>
+        <div class="mockup-sidebar">
+          <div class="sidebar">
+            <div class="sidebar-logo">SPORTIVO</div>
+            <div class="sidebar-item active"><span class="sidebar-icon">📊</span>Dashboard</div>
+            <div class="sidebar-item"><span class="sidebar-icon">👥</span>Alumnos</div>
+            <div class="sidebar-item"><span class="sidebar-icon">📅</span>Cursos</div>
+            <div class="sidebar-item"><span class="sidebar-icon">💳</span>Cobros</div>
+            <div class="sidebar-item"><span class="sidebar-icon">💬</span>Mensajes</div>
+          </div>
+          <div class="mockup-main">
+            <div class="mockup-main-title display">Resumen del mes</div>
+            <div class="kpi-row">
+              <div class="kpi">
+                <div class="kpi-label">Alumnos</div>
+                <div class="kpi-value display">128</div>
+                <div class="kpi-sub">↑ 12 nuevos</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Ingresos</div>
+                <div class="kpi-value display">$2.4M</div>
+                <div class="kpi-sub">Este mes</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">En mora</div>
+                <div class="kpi-value display">3</div>
+                <div class="kpi-sub warn">⚠ Pendiente</div>
+              </div>
+            </div>
+            <div class="table-mock">
+              <div class="table-row header">
+                <span class="tr-name">Alumno</span>
+                <span class="tr-curso">Curso</span>
+                <span class="tr-pago">Estado</span>
+              </div>
+              <div class="table-row">
+                <span class="tr-name">Martina López</span>
+                <span class="tr-curso">Fútbol Sub-12</span>
+                <span class="tr-pago"><span class="badge badge-ok">Pagado</span></span>
+              </div>
+              <div class="table-row">
+                <span class="tr-name">Diego Fernández</span>
+                <span class="tr-curso">Natación Adultos</span>
+                <span class="tr-pago"><span class="badge badge-warn">Pendiente</span></span>
+              </div>
+              <div class="table-row">
+                <span class="tr-name">Valentina Soto</span>
+                <span class="tr-curso">Tenis Infantil</span>
+                <span class="tr-pago"><span class="badge badge-ok">Pagado</span></span>
+              </div>
+              <div class="table-row">
+                <span class="tr-name">Andrés Muñoz</span>
+                <span class="tr-curso">Básquetbol Junior</span>
+                <span class="tr-pago"><span class="badge badge-red">En mora</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como-funciona">
+  <div class="container">
+    <div class="section-header">
+      <span class="tag fade-up">Proceso simple</span>
+      <h2 class="section-title fade-up delay-1">En marcha en menos de un día</h2>
+      <p class="section-sub fade-up delay-2">Sin instalaciones, sin configuraciones complejas. Sportivo está listo cuando tú lo estás.</p>
+    </div>
+    <div class="steps">
+      <div class="step-connector"></div>
+      <div class="step fade-up">
+        <span class="step-icon">🏗️</span>
+        <div class="step-number"><div class="step-num-circle">1</div> Configura tu centro</div>
+        <div class="step-title">Crea tus cursos y sube tus alumnos</div>
+        <div class="step-desc">Ingresa los datos de tu centro, crea tus cursos con horarios y cupos, y sube el listado de alumnos. En minutos tienes todo organizado.</div>
+      </div>
+      <div class="step fade-up delay-1">
+        <span class="step-icon">💳</span>
+        <div class="step-number"><div class="step-num-circle">2</div> Activa los cobros</div>
+        <div class="step-title">Cobra mensualidades online automáticamente</div>
+        <div class="step-desc">Conecta tu cuenta bancaria, define los montos y Sportivo se encarga de enviar los cobros, registrar los pagos y alertarte cuando alguien está en mora.</div>
+      </div>
+      <div class="step fade-up delay-2">
+        <span class="step-icon">📱</span>
+        <div class="step-number"><div class="step-num-circle">3</div> Comunica y gestiona</div>
+        <div class="step-title">Todo el centro en tu bolsillo</div>
+        <div class="step-desc">Envía comunicados a los tutores, controla asistencia y revisa el estado financiero de tu centro en tiempo real desde cualquier dispositivo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FUNCIONALIDADES -->
+<section id="funcionalidades">
+  <div class="container">
+    <div class="section-header">
+      <span class="tag fade-up">Funcionalidades</span>
+      <h2 class="section-title fade-up delay-1">Todo lo que necesitas,<br>nada que no usarás</h2>
+      <p class="section-sub fade-up delay-2">Diseñado específicamente para centros y escuelas deportivas. No es una herramienta genérica adaptada — es una solución construida para tu mundo.</p>
+    </div>
+
+    <div class="features-grid">
+
+      <!-- FEATURED: COBROS -->
+      <div class="feature-card featured fade-up">
+        <div>
+          <span class="feature-badge">⭐ Diferenciador clave</span>
+          <span class="feature-icon">💳</span>
+          <div class="feature-title">Cobros online integrados</div>
+          <div class="feature-desc">Olvídate de perseguir transferencias. Sportivo gestiona el cobro de mensualidades de forma automática, con alertas de mora y visibilidad financiera en tiempo real.</div>
+          <ul class="feature-list">
+            <li>Link de pago directo al tutor vía app o WhatsApp</li>
+            <li>Registro automático de pagos en tiempo real</li>
+            <li>Alertas automáticas antes y después del vencimiento</li>
+            <li>Panel financiero con flujo de caja del mes</li>
+            <li>Historial de pagos por alumno exportable</li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; font-weight:600;">Cobros del mes — Junio 2025</div>
+          <div class="payment-item">
+            <div class="payment-avatar">ML</div>
+            <div class="payment-info">
+              <div class="payment-name">Martina López</div>
+              <div class="payment-course">Fútbol Sub-12</div>
+            </div>
+            <div style="text-align:right">
+              <div class="payment-amount">$45.000</div>
+              <span class="badge badge-ok" style="margin-top:3px">Pagado</span>
+            </div>
+          </div>
+          <div class="payment-item">
+            <div class="payment-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">DF</div>
+            <div class="payment-info">
+              <div class="payment-name">Diego Fernández</div>
+              <div class="payment-course">Natación Adultos</div>
+            </div>
+            <div style="text-align:right">
+              <div class="payment-amount">$52.000</div>
+              <span class="badge badge-warn" style="margin-top:3px">Vence hoy</span>
+            </div>
+          </div>
+          <div class="payment-item">
+            <div class="payment-avatar" style="background:linear-gradient(135deg,#8B5CF6,#3B82F6)">VS</div>
+            <div class="payment-info">
+              <div class="payment-name">Valentina Soto</div>
+              <div class="payment-course">Tenis Infantil</div>
+            </div>
+            <div style="text-align:right">
+              <div class="payment-amount">$38.000</div>
+              <span class="badge badge-ok" style="margin-top:3px">Pagado</span>
+            </div>
+          </div>
+          <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:var(--muted)">Total cobrado este mes</span>
+            <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:18px; font-weight:800; color:var(--white)">$2.4M</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GESTIÓN -->
+      <div class="feature-card fade-up">
+        <span class="feature-icon">📋</span>
+        <div class="feature-title">Gestión de cursos y alumnos</div>
+        <div class="feature-desc">Crea y administra todos tus cursos, controla asistencia y mantén la ficha completa de cada alumno en un solo lugar.</div>
+        <ul class="feature-list">
+          <li>Cursos con horarios, niveles y cupos</li>
+          <li>Ficha del alumno con datos médicos y contacto del tutor</li>
+          <li>Control de asistencia por sesión</li>
+          <li>Vista consolidada de todo el centro</li>
+        </ul>
+      </div>
+
+      <!-- COMUNICACIONES -->
+      <div class="feature-card fade-up delay-1">
+        <span class="feature-icon">💬</span>
+        <div class="feature-title">Comunicaciones integradas</div>
+        <div class="feature-desc">Deja de depender del WhatsApp personal. Comunícate con tutores de forma profesional y centralizada directamente desde Sportivo.</div>
+        <ul class="feature-list">
+          <li>Mensajería directa entrenador ↔ tutor</li>
+          <li>Notificaciones automáticas de cambios y avisos</li>
+          <li>Difusión a todo el curso con un clic</li>
+          <li>Historial completo de conversaciones</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA / LEAD FORM -->
+<section id="contacto">
+  <div class="cta-bg"></div>
+  <div class="container">
+    <div class="cta-box fade-up">
+      <div class="cta-left">
+        <span class="tag">Agenda tu demo</span>
+        <h2 class="cta-title display">Tu centro merece una <span>gestión profesional</span></h2>
+        <p class="cta-sub">Cuéntanos sobre tu centro y te mostramos cómo Sportivo puede transformar tu operación. Demo gratuita y sin compromiso.</p>
+        <div class="cta-perks">
+          <div class="perk"><div class="perk-check">✓</div>Demo personalizada a tu tipo de centro</div>
+          <div class="perk"><div class="perk-check">✓</div>Sin costo de implementación</div>
+          <div class="perk"><div class="perk-check">✓</div>Onboarding guiado incluido</div>
+          <div class="perk"><div class="perk-check">✓</div>Soporte en español siempre</div>
+        </div>
+      </div>
+      <div>
+        <form class="lead-form" onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" placeholder="Tu nombre">
+            </div>
+            <div class="form-group">
+              <label>Apellido</label>
+              <input type="text" placeholder="Tu apellido">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="tu@centro.cl">
+          </div>
+          <div class="form-group">
+            <label>Teléfono / WhatsApp</label>
+            <input type="tel" placeholder="+56 9 1234 5678">
+          </div>
+          <div class="form-group">
+            <label>Nombre del centro deportivo</label>
+            <input type="text" placeholder="Ej: Academia de Fútbol Los Cóndores">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de deporte</label>
+              <select>
+                <option value="" disabled selected>Selecciona</option>
+                <option>Fútbol</option>
+                <option>Natación</option>
+                <option>Tenis</option>
+                <option>Básquetbol</option>
+                <option>Artes Marciales</option>
+                <option>Gimnasia</option>
+                <option>Multideportivo</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>N° de alumnos aprox.</label>
+              <select>
+                <option value="" disabled selected>Selecciona</option>
+                <option>Menos de 30</option>
+                <option>30 – 100</option>
+                <option>100 – 300</option>
+                <option>Más de 300</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="form-submit display">
+            Quiero mi demo gratuita →
+          </button>
+          <p class="form-disclaimer">Sin spam. Te contactamos en menos de 24 horas.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="inner">
+    <div class="footer-logo display">SPORT<span>I</span>VO</div>
+    <div class="footer-copy">© 2025 Sportivo. Todos los derechos reservados.</div>
+  </div>
+</footer>
+
+<script>
+  // Scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.form-submit');
+    btn.textContent = '✓ ¡Recibido! Te contactamos pronto.';
+    btn.style.background = '#059669';
+    btn.style.boxShadow = '0 4px 20px rgba(5,150,105,0.35)';
+    btn.disabled = true;
+  }
+</script>
+
+</body>
+</html>
